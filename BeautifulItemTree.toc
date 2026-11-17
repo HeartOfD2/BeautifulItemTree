@@ -1,0 +1,45 @@
+## Interface: 16001
+## Title: BeautifulItemTree
+## Title-deDE: BeautifulItemTree
+## Notes: German texts, German names and a cleaner look for ItemTree. Requires ItemTree.
+## Notes-deDE: Deutsche Texte, deutsche Namen und ein ruhigeres Aussehen für ItemTree. Benötigt ItemTree.
+## Author: HeartOfD2
+## Version: 0.1.0
+## X-Website: https://github.com/HeartOfD2/BeautifulItemTree
+## X-Curse-Project-ID: 1812215
+## Category: Professions
+## IconTexture: Interface\AddOns\BeautifulItemTree\Media\Icon
+## Dependencies: ItemTree
+## OptionalDeps: EllesmereUI, EllesmereUIBlizzardSkin
+## SavedVariables: BeautifulItemTreeDB
+## AddonCompartmentFunc: BeautifulItemTree_OnCompartmentClick
+## AddonCompartmentFuncOnEnter: BeautifulItemTree_OnCompartmentEnter
+## AddonCompartmentFuncOnLeave: BeautifulItemTree_OnCompartmentLeave
+
+Locales\enUS.lua
+Locales\deDE.lua
+Core\Core.lua
+Core\Layers.lua
+Adapters\ItemTreeCompat.lua
+Adapters\ItemTree.lua
+Adapters\Env.lua
+Adapters\EUI.lua
+Translate\ItemTreeUI_deDE.lua
+Translate\UIBlock.lua
+Translate\UIText.lua
+Translate\Names.lua
+Translate\Places.lua
+Translate\Items.lua
+Translate\CreaturesDE.lua
+Translate\Creatures.lua
+Translate\Quests.lua
+Translate\Search.lua
+UI\Fonts.lua
+UI\Theme.lua
+UI\Kit.lua
+UI\KitForms.lua
+Skin\Tokens.lua
+Skin\Light.lua
+Skin\Rebuild.lua
+Settings\Options.lua
+Core\Probe.lua

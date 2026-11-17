@@ -1,0 +1,14 @@
+package-as: BeautifulItemTree
+
+ignore:
+  - docs
+  - .github
+  - .gitignore
+  - README.md
+
+required-dependencies:
+  - itemtree
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
