@@ -1,0 +1,9 @@
+<Bindings>
+  <!--
+    Found by the client in the addon folder by itself; it is not listed in the TOC. No default key on purpose: a default
+    would take a key the player may already use. The name and the header are globals set in Core/Core.lua.
+  -->
+  <Binding name="BEAUTIFULITEMTREE_TOGGLE" category="BINDING_HEADER_BEAUTIFULITEMTREE">
+    BeautifulItemTree_ToggleWindow()
+  </Binding>
+</Bindings>

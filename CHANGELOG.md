@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- New key binding "Show or hide ItemTree" (Options > Keybindings > BeautifulItemTree). No default key.
+
 ## 0.1.1
 
 - Tested with ItemTree v1.2.6 (v1.2.5 still works): new texts in German (costs, Craftsman's Writs, Back and Forward, gamepad

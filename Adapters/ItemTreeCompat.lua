@@ -286,6 +286,10 @@ Compat.contract = {
     { cap = "SkinLegend", kind = "member", name = "entry.label", when = "lazy" },
     { cap = "SkinLegend", kind = "member", name = "entry.tickWidth", when = "lazy" },
     { cap = "SkinLegend", kind = "member", name = "entry.badgeSize", when = "lazy" },
+    -- key binding "show / hide ItemTree" (Bindings.xml): the window's state and its way in; optional, a missing name costs only the key
+    { cap = "WindowKey", kind = "function", name = "ItemTree.UI.Frame.IsShown", when = "optional" },
+    { cap = "WindowKey", kind = "function", name = "ItemTree.UI.Frame.Hide", when = "optional" },
+    { cap = "WindowKey", kind = "function", name = "ItemTree.Slash.OpenDefault", when = "optional" },
     -- BEGIN text fields (produced by tools/itemtree_l10n.py --write; layer UIText M2, never blocks a layer)
     { cap = "TextFields", kind = "global", name = "BINDING_HEADER_ITEMTREE", when = "optional" },
     { cap = "TextFields", kind = "global", name = "BINDING_NAME_ITEMTREE_BOSSLOOT", when = "optional" },

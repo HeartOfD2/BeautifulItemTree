@@ -247,6 +247,15 @@ function ns.CreaturesReport(argument)
     ns.Say(Creatures.BossLine())
 end
 
+-- Key binding (Bindings.xml): show / hide the ItemTree window. No default key, so no key the player uses is taken; the
+-- player sets one under Options > Keybindings > BeautifulItemTree. Bindings.xml can only call a global.
+BINDING_HEADER_BEAUTIFULITEMTREE = "BeautifulItemTree"
+BINDING_NAME_BEAUTIFULITEMTREE_TOGGLE = L["Show or hide ItemTree"]
+
+function BeautifulItemTree_ToggleWindow()
+    if ns.ItemTree and ns.ItemTree.ToggleWindow then ns.ItemTree.ToggleWindow() end
+end
+
 -- Addon compartment callbacks must be real globals (named in the TOC).
 function BeautifulItemTree_OnCompartmentClick()
     ns.OpenOptions()

@@ -271,6 +271,24 @@ function Adapter.RedrawShown()
     return true
 end
 
+-- The key binding "show / hide ItemTree": hides the window when it is up, else opens it the way /it does (the last page,
+-- or a pick). Returns true when the window is up after the call. Never raises.
+function Adapter.ToggleWindow()
+    local isShown = Adapter.Resolve("ItemTree.UI.Frame.IsShown")
+    local hide = Adapter.Resolve("ItemTree.UI.Frame.Hide")
+    local open = Adapter.Resolve("ItemTree.Slash.OpenDefault")
+    if type(open) ~= "function" then return false end
+    if type(isShown) == "function" then
+        local ok, shown = pcall(isShown)
+        if ok and shown and type(hide) == "function" then
+            pcall(hide)
+            return false
+        end
+    end
+    local ok, opened = pcall(open)
+    return ok and opened and true or false
+end
+
 ---------------------------------------------------------------------------
 -- Skin (layer Rebuild, step 17): the window and the parts the skin restyles; all lazy, nil when ItemTree has none
 ---------------------------------------------------------------------------
