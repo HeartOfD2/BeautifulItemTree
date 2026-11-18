@@ -57,7 +57,7 @@ local ROLE_RULE = {
 
 local failed = {}     -- rule -> error text
 local reported = false
-local stats = { textures = 0, buttons = 0, inputs = 0, bars = 0, tabs = 0, walks = 0, assets = false, hooks = 0 }
+local stats = { textures = 0, buttons = 0, inputs = 0, bars = 0, tabs = 0, walks = 0, quick = 0, assets = false, hooks = 0 }
 
 local own = Weak()        -- regions the light look leaves alone (made or restyled by this file)
 local made = Weak()       -- regions this file made (never faded or restyled)
@@ -276,6 +276,9 @@ local function SetButtonFonts(button, normal, highlight, disabled, points)
 end
 Rebuild.StateFont = StateFont
 Rebuild.ButtonText = ButtonText
+
+-- For the offline test: full looks and quick looks so far.
+function Rebuild._Walks() return stats.walks, stats.quick end
 
 function Rebuild.IsSkinned(object)
     return skinned[object] ~= nil
@@ -862,8 +865,13 @@ local function Regions(frame)
     return { frame:GetRegions() }
 end
 
+-- What a quick look already saw: frame -> number of its regions then (Walk below).
+local seen = Weak()
+
 -- visit(object, type, chrome) for every frame and region below root; chrome is false inside the Share link.
-local function Walk(root, visit)
+-- quick (the light look's ticker): only shown frames, and of those only frames and regions not seen before; a frame
+-- whose number of regions has not changed is not visited again. Hidden panes wait for the full look (tab change, open).
+local function Walk(root, visit, quick)
     local share = Adapter.WindowPart("share")
     local stack, depth, chrome = { root }, { 0 }, { true }
     local n = 1
@@ -872,17 +880,23 @@ local function Walk(root, visit)
         stack[n], depth[n], chrome[n] = nil, nil, nil
         n = n - 1
         local forbidden = type(frame.IsForbidden) == "function" and frame:IsForbidden()
-        if not forbidden and not own[frame] then
+        local hidden = quick and not forbidden and type(frame.IsShown) == "function" and not frame:IsShown()
+        if not forbidden and not hidden and not own[frame] then
             if frame == share then c = false end
-            local ok, kind = pcall(frame.GetObjectType, frame)
-            if ok and type(kind) == "string" then visit(frame, kind, c) end
-            local regions = Regions(frame)
+            local before = seen[frame]
+            if not (quick and before) then
+                local ok, kind = pcall(frame.GetObjectType, frame)
+                if ok and type(kind) == "string" then visit(frame, kind, c) end
+            end
+            local count = type(frame.GetNumRegions) == "function" and frame:GetNumRegions() or nil
+            local regions = not (quick and before and count and count == before) and Regions(frame) or nil
             if regions then
                 for i = 1, #regions do
                     local region = regions[i]
                     if IsRegion(region) and not own[region] then visit(region, region:GetObjectType(), c) end
                 end
             end
+            seen[frame] = count or (regions and #regions) or before or 0
             local children = d < 40 and Children(frame) or nil
             if children then
                 for i = 1, #children do
@@ -914,9 +928,15 @@ local function Visit(object, kind, chrome)
     if Light and Light.Active() then Guard("light", Light.Visit, object, kind) end
 end
 
-local function LookAtWindow()
+local function LookAtWindow(quick)
     local window = Adapter.Window()
     if not window then return end
+    if quick then
+        stats.quick = stats.quick + 1
+        Walk(window, Visit, true)
+        Guard("light", RetintInfo)
+        return
+    end
     stats.walks = stats.walks + 1
     for _, button in ipairs((Adapter.WindowTabs())) do
         if type(button) == "table" then isTab[button] = true end
@@ -928,16 +948,20 @@ local function LookAtWindow()
     Guard("light", RetintInfo)
 end
 
-local walkQueued, walkWaiting = false, false
+local walkQueued, walkWaiting, walkFull = false, false, false
 
 local function WalkNow()
     walkWaiting = false
+    local full = walkFull
+    walkFull = false
     if not Layers.IsActive("Rebuild") then return end
-    LookAtWindow()
+    LookAtWindow(not full)
 end
 
--- Looks at the window once, on the next frame (redraws come in bursts) and never in combat.
-function Rebuild.ScheduleWalk()
+-- Looks at the window once, on the next frame (redraws come in bursts) and never in combat. quick = only what is new
+-- and shown (the light look's ticker); any full request in the same burst makes it a full look.
+function Rebuild.ScheduleWalk(quick)
+    if quick ~= true then walkFull = true end
     if walkQueued then return end
     walkQueued = true
     C_Timer.After(0, function()
@@ -1084,11 +1108,12 @@ local function StopTicker()
     end
 end
 
--- While the light look is on and the window is open, look again every second (rows ItemTree makes while scrolling).
+-- While the light look is on and the window is open, look every second at what is new and shown (rows ItemTree makes
+-- while scrolling); the full look runs on open, tab change and redraws.
 local function StartTicker()
     StopTicker()
     if not (ns.Light and ns.Light.Active()) or type(C_Timer.NewTicker) ~= "function" then return end
-    ticker = C_Timer.NewTicker(1, Rebuild.ScheduleWalk)
+    ticker = C_Timer.NewTicker(1, function() Rebuild.ScheduleWalk(true) end)
 end
 
 -- After a tab change or an open the window may hold new panes (look at all of it); after a pane redraw only the light
@@ -1118,6 +1143,8 @@ local function SkinWindow()
             StartTicker()
         end)
         window:HookScript("OnHide", StopTicker)
+        -- the window may be open already (built while shown, or the layer started late): its OnShow has run
+        if window.IsShown and window:IsShown() then StartTicker() end
     end
     FlushLater()
     if ns.Light then Guard("light", ns.Light.Refresh) end

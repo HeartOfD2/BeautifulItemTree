@@ -22,7 +22,7 @@ local Compat = {}
 ns.ItemTreeCompat = Compat
 
 Compat.addon = "ItemTree"
-Compat.testedVersions = { "v1.2.5" }
+Compat.testedVersions = { "v1.2.5", "v1.2.6" }
 
 -- ItemTree asset key -> the role the skin (layer Rebuild) gives a texture of the window that gets it (cap SkinAssets).
 Compat.skinAssets = {
@@ -61,6 +61,8 @@ Compat.contract = {
     { cap = "BossLootNames", kind = "function", name = "ItemTree.UI.BossLoot.CreatureNameFor", loose = true, when = "load", wrapped = true },
     { cap = "GraphTitle", kind = "function", name = "ItemTree.Graph.Title", when = "load", wrapped = true },
     { cap = "CreatureNames", kind = "function", name = "ItemTree.Graph.Name", when = "load" },
+    -- v1.2.6: a Craftsman's Writ tooltip names its customer through Writs.NpcName (Graph.Name, English); display only
+    { cap = "WritCustomer", kind = "function", name = "ItemTree.Writs.NpcName", when = "optional", wrapped = true },
     { cap = "CreatureHeader", kind = "function", name = "ItemTree.UI.InfoPanel.ContentForKey", when = "optional", wrapped = true },
     -- the Boss loot index once ItemTree built it (only counted for /bit creatures, never built by this addon)
     { cap = "BossIndex", kind = "field", name = "ItemTree.Data.cache", when = "optional" },
@@ -354,5 +356,6 @@ Compat.contract = {
     { cap = "TextFields", kind = "field", name = "ItemTree.ViewModel.SOURCE_NOTICE", when = "optional" },
     { cap = "TextFields", kind = "field", name = "ItemTree.ViewModel.TRAINS_RANK_NAMES", when = "optional" },
     { cap = "TextFields", kind = "field", name = "ItemTree.ViewModel.TRAINS_UNKNOWN", when = "optional" },
+    { cap = "TextFields", kind = "field", name = "ItemTree.Writs.CAMP_NAMES", when = "optional" },
     -- END text fields
 }

@@ -4,7 +4,7 @@
 ## Notes: German texts, German names and a cleaner look for ItemTree. Requires ItemTree.
 ## Notes-deDE: Deutsche Texte, deutsche Namen und ein ruhigeres Aussehen für ItemTree. Benötigt ItemTree.
 ## Author: HeartOfD2
-## Version: 0.1.0
+## Version: 0.1.1
 ## X-Website: https://github.com/HeartOfD2/BeautifulItemTree
 ## X-Curse-Project-ID: 1812215
 ## Category: Professions

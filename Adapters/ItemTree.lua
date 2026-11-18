@@ -4,8 +4,8 @@
 -- Rules (docs/itemtree-architektur.md, section 1):
 --   * Wrap replaces one function field of an ItemTree table, once, and only for functions ItemTree itself calls through
 --     the table. fn(original, ...) runs in pcall; when it fails, the original result is returned and the layer is
---     switched off. Wrapped functions must be pure display or search functions: after a failure the original is called
---     a second time.
+--     switched off (a wrapper without a layer switches off alone, Adapter.DeadWrappers). Wrapped functions must be pure
+--     display or search functions: after a failure the original is called a second time, once.
 --   * PostHook is hooksecurefunc plus pcall, for after-the-fact work (window build).
 --   * Blizzard functions are never wrapped. ItemTree's data, records and saved variables are never written.
 local _, ns = ...
@@ -164,10 +164,12 @@ end
 -- Hooks
 ---------------------------------------------------------------------------
 
-local wrapped = {} -- "path.field" -> { original, fn, layer }
+local wrapped = {} -- "path.field" -> { original, fn, layer, dead, err }
 
 -- Replaces tablePath.field once. fn(original, ...) returns what the wrapped function should return.
 -- Returns true, or false and a reason. layer = layer key to switch off on an error and to ask for "is it active".
+-- A wrapper without a layer (shared by several layers, e.g. Tree.RowText) is switched off alone after its first error:
+-- one chat message, ItemTree's original from then on, the error in /bit status.
 function Adapter.Wrap(tablePath, field, fn, layer)
     local id = tablePath .. "." .. field
     if wrapped[id] then return false, "already wrapped" end
@@ -178,13 +180,30 @@ function Adapter.Wrap(tablePath, field, fn, layer)
     local record = { original = original, fn = fn, layer = layer }
     wrapped[id] = record
     t[field] = function(...)
-        if layer and not ns.Layers.IsActive(layer) then return original(...) end
+        if record.dead or (layer and not ns.Layers.IsActive(layer)) then return original(...) end
         local result = Pack(pcall(fn, original, ...))
         if result[1] then return unpack(result, 2, result.n) end
-        if layer then ns.Layers.Fail(layer, id, result[2]) end
+        if layer then
+            ns.Layers.Fail(layer, id, result[2])
+        else
+            record.dead = true
+            record.err = ns.SafeString(result[2], "?")
+            ns.Say(ns.L["German names in %s are switched off after an error. ItemTree itself keeps working; /bit status has details."]
+                :format(id))
+        end
         return original(...)
     end
     return true
+end
+
+-- Wrappers without a layer that an error switched off: list of "path.field: error" (for /bit status).
+function Adapter.DeadWrappers()
+    local list = {}
+    for id, record in pairs(wrapped) do
+        if record.dead then list[#list + 1] = id .. ": " .. tostring(record.err) end
+    end
+    table.sort(list)
+    return list
 end
 
 function Adapter.IsWrapped(tablePath, field)

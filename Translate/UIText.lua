@@ -97,13 +97,20 @@ local function Escaped(s)
     return changed and table.concat(parts) or nil
 end
 
-local memo = {}
+-- Texts already looked at (German text or false). Item names, counts and tooltips make new texts all the time, so the
+-- memo is emptied when it reaches MEMO_MAX entries instead of growing for the whole session.
+local MEMO_MAX = 4000
+local memo, memoSize = {}, 0
 local function Display(s)
     if type(s) ~= "string" or s == "" then return s end
     local known = memo[s]
     if known == nil then
         known = Escaped(s) or false
+        if memoSize >= MEMO_MAX then
+            memo, memoSize = {}, 0
+        end
         memo[s] = known
+        memoSize = memoSize + 1
     end
     if known then
         stats.display = stats.display + 1
@@ -499,3 +506,5 @@ Layers.Implement("UIText", {
 
 -- Test hook (tools/test/smoke.py): the pure text functions.
 UIText._Display = Display
+function UIText._MemoSize() return memoSize end
+function UIText._SetMemoMax(n) MEMO_MAX = n end

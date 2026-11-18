@@ -165,6 +165,9 @@ function ns.Status()
         local err = ns.Layers.LastError(line.key)
         if err then ns.Say("    " .. err) end
     end
+    for _, dead in ipairs(A.DeadWrappers()) do
+        ns.Say("  " .. L["Switched off after an error: %s"]:format(dead))
+    end
     if ns.UIText and ns.UIText.StatusLine then
         local line = ns.UIText.StatusLine()
         if line then ns.Say("    " .. line) end

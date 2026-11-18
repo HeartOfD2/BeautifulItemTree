@@ -1,4 +1,4 @@
--- PRODUCED by tools/itemtree_l10n.py --write (ItemTree v1.2.5). Do not edit by hand.
+-- PRODUCED by tools/itemtree_l10n.py --write (ItemTree v1.2.6). Do not edit by hand.
 -- English texts that ItemTree uses as identity (comparison, table key, edge group) or reads in a file that
 -- records or shares data (docs/itemtree-architektur.md, 5.1 and 5.2). Layer UIText never sets these through
 -- ItemTree.L (M1); they are translated only where a row is drawn (M3). The English text is only the key.

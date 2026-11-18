@@ -344,6 +344,16 @@ local function WrapBoss()
     end)
 end
 
+-- Writs.NpcName(id) -> the customer a Craftsman's Writ tooltip names (v1.2.6, display only). ItemTree answers the English
+-- graph name; a name the client knows replaces it. Optional: a missing name costs only the writ tooltip's customer.
+local function WrapWritCustomer()
+    Adapter.Wrap("ItemTree.Writs", "NpcName", function(original, npc, ...)
+        local name = original(npc, ...)
+        if type(name) ~= "string" then return name end
+        return Creatures.Name(npc) or name
+    end, "Creatures")
+end
+
 Layers.Implement("Creatures", {
     Load = function()
         -- wrappers first: a missing name stops the layer before anything is changed
@@ -358,6 +368,7 @@ Layers.Implement("Creatures", {
         ns.Names.Install()
         ns.Names.InstallTitles()
         WrapBoss()
+        WrapWritCustomer()
     end,
 })
 

@@ -27,6 +27,7 @@ local type, pcall, tonumber, ipairs, pairs, tostring, next = type, pcall, tonumb
 local find, byte, char, floor, sort = string.find, string.byte, string.char, math.floor, table.sort
 
 local READS_PER_FRAME = 500      -- C_Item.GetItemNameByID calls a frame while the item index builds (no server traffic)
+local FIRST_READS = 5000         -- at most this many read inside one search; the rest goes on in the pump (rerun below)
 local REQUESTS_PER_SECOND = 200  -- architecture 7: index build, C_Item.RequestLoadItemDataByID
 local POLL = 5                   -- seconds between looks for ItemTree's name index until it is there
 local RERUN_DELAY = 0.5          -- seconds between a matching German name coming in and the open search running again
@@ -295,14 +296,15 @@ pump:SetScript("OnEvent", function(_, _, id, success)
 end)
 
 -- The item index for this search: ItemTree's index may have been dropped and built again (a setting changed); then the
--- German one starts over. A build still in flight is finished here (reads only), so a search is never partial by the
--- names the client already knows.
+-- German one starts over. A build still in flight goes on here by at most FIRST_READS names (reads only), so the first
+-- search does not stall the frame on a large index; the pump reads the rest, and the search stays open (Remember) and
+-- runs again once a German name for it comes in.
 local function EnsureItems()
     local source = ItemSource()
     if not source then return nil end
     if source ~= items.source then ResetItems(source) end
     if not items.done then
-        StepItems(math.huge)
+        StepItems(FIRST_READS)
         pump:SetScript("OnUpdate", Tick)
     end
     return items
@@ -650,5 +652,6 @@ Layers.Implement("Search", {
 
 -- Test hooks (tools/test/smoke.py)
 Search._Pump = pump
+function Search._SetFirstReads(n) FIRST_READS = n end
 function Search._Items() return items end
 function Search._Wanted() return wanted end

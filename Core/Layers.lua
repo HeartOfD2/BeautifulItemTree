@@ -106,14 +106,35 @@ local function LocaleOk(def)
 end
 
 -- Caps of the layer that are known to the contract and missing. Caps not in the contract yet belong to later steps.
+-- The answer is kept per layer and stage: ItemTree's names do not come or go once a stage began, and IsActive runs on
+-- hot paths (every tree row, every texture). false = nothing missing.
+local missingAt = {} -- stage -> { key -> missing name or false }
+
 local function MissingName(def)
+    local cache = missingAt[stage]
+    if not cache then
+        cache = {}
+        missingAt[stage] = cache
+    end
+    local known = cache[def.key]
+    if known ~= nil then return known or nil end
+    local missing = false
     for _, cap in ipairs(def.caps) do
         if ns.ItemTree.CapKnown(cap) then
             local ok, name = ns.ItemTree.CapOk(cap, stage == "login" and "login" or "load")
-            if not ok then return name end
+            if not ok then
+                missing = name or "?"
+                break
+            end
         end
     end
-    return nil
+    cache[def.key] = missing
+    return missing or nil
+end
+
+-- For the offline test: forget the kept answers (a test swaps ItemTree's tables).
+function Layers._ForgetNames()
+    for s in pairs(missingAt) do missingAt[s] = nil end
 end
 
 -- state: "active" | "off" | "language" | "missing" | "error" | "pending"; second value: detail text.
